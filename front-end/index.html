@@ -311,10 +311,17 @@
     window.addEventListener('hashchange', handleAppRouting);
     window.addEventListener('DOMContentLoaded', async () => {
       setupDragAndDropZones();
-      await pullPublicConfiguration();
+      
+      // Fix: Run routing immediately so the UI locks down BEFORE waiting for network calls
       handleAppRouting();
+      
+      try {
+        await pullPublicConfiguration();
+      } catch (e) {
+        console.error("Delayed public configuration fetch:", e);
+      }
     });
-
+    
     function setupDragAndDropZones() {
       const dropZone = document.getElementById('drop-zone');
       ['dragenter', 'dragover'].forEach(eventName => {
