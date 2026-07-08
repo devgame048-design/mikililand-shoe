@@ -617,8 +617,11 @@
 
         const ordersLedger = document.getElementById('admin-orders-ledger');
         ordersLedger.innerHTML = data.orders.length === 0 ? `<p style="color:var(--text-muted); font-size:0.75rem;">Feed buffer completely clear.</p>` : '';
-        data.orders.forEach(ord => {
-          const isDelivered = ord.status === 'delivered';
+       data.orders.forEach(ord => {
+          // Fix: Read 'status' with exact capitalized matching from the backend database
+          const isDelivered = ord.status === 'Delivered';
+          const statusClass = ord.status ? ord.status.toLowerCase() : 'pending';
+          
           ordersLedger.innerHTML += `
             <div class="ledger-item">
               <div class="ledger-header">
@@ -629,7 +632,7 @@
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Size Matrix: ${ord.selected_size}</div>
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Location: ${ord.delivery_location}</div>
                 </div>
-                <span class="tag-status ${ord.order_status}">${ord.order_status}</span>
+                <span class="tag-status ${statusClass}">${ord.status || 'Pending'}</span>
               </div>
               <div class="actions-group">
                 ${!isDelivered ? `<button class="btn-sm btn-deliver-action" onclick="markOrderDelivered(${ord.id})">Fulfill Order</button>` : ''}
