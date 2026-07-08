@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="googleb4c225f85c6e64fe" />
+  <meta property="og:title" content="Mikililand Shoes | Premium Footwear">
+  <meta property="og:description" content="Explore luxury shoe styles crafted for ultimate comfort and elegance.">
+  <meta property="og:image" content="https://mikililandshoe.netlify.app/assets/logo.png">
+  <title>MIKILILAND SHOES</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="64x64" href="MIKILILAND SHOE logo.png">
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #050505;
+      --surface-card: #0c0c0c;
+      --border: #151515;
+      --text: #ffffff;
+      --text-muted: #666666;
+      --accent: #E2B376;
+      --error: #ff453a;
+      --success: #30d158;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
+    
+    header { border-bottom: 1px solid var(--border); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: #000000; position: sticky; top: 0; z-index: 100; }
+    header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 3px; color: var(--text); cursor: pointer; text-transform: uppercase; }
+    
+    .container { max-width: 1500px; margin: 0 auto; padding: 30px; }
+    .hidden { display: none !important; }
+    
+    input, select, button { background: var(--surface-card); border: 1px solid var(--border); color: var(--text); padding: 14px 18px; font-size: 0.9rem; border-radius: 2px; width: 100%; outline: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+    input:focus { border-color: #ffffff; box-shadow: 0 0 0 1px #ffffff; }
+    
+    button { background: #ffffff; color: #000000; font-weight: 700; cursor: pointer; border: none; letter-spacing: 1px; text-transform: uppercase; font-size: 0.8rem; }
+    button:hover { background: #000000; color: #ffffff; border: 1px solid #ffffff; box-shadow: 0 0 12px rgba(255, 255, 255, 0.15); }
+    
+    .search-container { margin-bottom: 40px; }
+    .search-container input { padding: 16px 20px; background: var(--surface); text-align: left; border-color: var(--border); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+    
+    .shoe-card { background: var(--surface); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+    .shoe-card:hover { border-color: #ffffff; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255, 255, 255, 0.05); }
+    
+    .image-frame { width: 100%; aspect-ratio: 1; background: #020202; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; }
+    .image-frame img { max-width: 80%; max-height: 80%; object-fit: contain; z-index: 1; }
+    
+    .card-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .brand { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 4px; }
+    .name { font-size: 1.05rem; font-weight: 500; margin-bottom: 8px; color: #fff; }
+    .price { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+    
+    .sizes-rendered-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
+    .size-token-badge { background: #111; color: #aaa; border: 1px solid #222; font-size: 0.7rem; padding: 3px 7px; font-weight: 600; text-transform: uppercase; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-box { background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 460px; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+    .modal-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; }
+    .close-modal { position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; width: auto; padding: 0; cursor: pointer; }
+    .close-modal:hover { color: #fff; box-shadow: none; border: none; }
+    
+    .size-btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .size-choice-btn { background: var(--surface-card); border: 1px solid var(--border); color: #fff; padding: 8px 14px; width: auto; cursor: pointer; }
+    .size-choice-btn.active { background: #ffffff; color: #000000; font-weight: 600; border-color: #fff; }
+
+    .lock-view { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 75vh; }
+    .lock-box { max-width: 380px; width: 100%; text-align: center; }
+    .lock-box h2 { font-size: 0.9rem; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 10px; }
+    .pin-display { text-align: center; font-size: 2rem; letter-spacing: 12px; padding-left: 12px; background: transparent; border: none; border-bottom: 1px solid var(--border); width: 100%; margin: 24px 0; color: #fff; border-radius: 0; }
+    
+    .metrics-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+    .stat-badge { background: var(--surface); border: 1px solid var(--border); padding: 20px; text-align: left; }
+    .stat-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; font-weight: 600; }
+    .stat-val { font-size: 1.5rem; font-weight: 700; margin-top: 6px; color: #fff; }
+    
+    .admin-triple-split { display: grid; grid-template-columns: 1fr 1.1fr 1.1fr; gap: 24px; }
+    @media (max-width: 1100px) { .admin-triple-split { grid-template-columns: 1fr; } }
+    
+    .admin-form-panel { background: var(--surface); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
+    .form-section-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: var(--text-muted); text-transform: uppercase; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); letter-spacing: 1px; }
+    .form-row input { background: #000; border-color: var(--border); }
+    
+    .ledger-title { font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 12px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .ledger-item { background: var(--surface); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+    .ledger-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .actions-group { display: flex; gap: 6px; width: 100%; }
+    
+    .btn-sm { padding: 8px 12px; font-size: 0.75rem; width: auto; text-transform: uppercase; font-weight: 600; }
+    .btn-sold-toggle, .btn-edit-action { background: #111; color: #fff; border: 1px solid var(--border); width: 100%; }
+    .btn-del-action { background: #1a0808; color: var(--error); border: 1px solid #301010; }
+    .btn-deliver-action { background: #ffffff; color: #000000; width: 100%; }
+    .btn-sell-direct { background: var(--accent); color: #000; font-weight: 700; width: 100%; border: none; }
+    
+    .tag-status { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; background: #151515; color: #aaa; border: 1px solid #222; }
+    .tag-status.pending { color: var(--accent); border-color: #3a2d14; }
+    .tag-status.delivered { color: var(--success); border-color: #143a1e; }
+    .sold-out-row { opacity: 0.35; }
+
+    .brand-watermark-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000000; border-top: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; z-index: 999; }
+    .watermark-left { display: flex; align-items: center; gap: 12px; }
+    .dev-logo-asset { height: 32px; width: 32px; object-fit: contain; background: transparent; }
+    .logo-meta { font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: #fff; line-height: 1.3; }
+    .watermark-right { text-align: right; font-size: 0.75rem; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; }
+
+    .phone-highlight-block { background: var(--surface-card); border: 1px solid var(--border); padding: 16px; font-size: 1.25rem; font-weight: 700; letter-spacing: 2px; margin: 20px 0; color: var(--accent); text-align: center; }
+    
+    .terminal-upload-zone { border: 2px dashed var(--border); background: #020202; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s ease; margin-bottom: 8px; }
+    .terminal-upload-zone:hover { border-color: #fff; background: #070707; }
+    .upload-status-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; color: var(--text-muted); font-weight: 600; }
+    .upload-status-lbl.active-upload { color: var(--accent); }
+    .upload-status-lbl.success-upload { color: var(--success); }
+
+    .admin-search-wrapper { margin-bottom: 16px; }
+    .admin-search-wrapper input { background: #050505; border-color: var(--border); padding: 10px 14px; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 id="brand-logo">MIKILILAND SHOES<img style="height: 32px; width: 32px;" src="shoe logo.png" alt="Shoe Logo"></h1>
+    <div id="nav-action"></div>
+  </header>
+
+  <div class="container">
+    
+    <div id="customer-view" class="hidden">
+      <div class="search-container">
+        <input type="text" id="store-search" placeholder="Search product line..." oninput="filterCatalogGrid()" />
+      </div>
+      <div id="catalog-grid" class="grid"></div>
+    </div>
+
+    <div id="order-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <button class="close-modal" onclick="closeCustomerModal()">✕</button>
+        <div class="modal-title" id="m-shoe-title">Checkout Input</div>
+        <div class="modal-subtitle" id="m-shoe-price">0 ETB</div>
+        
+        <div class="form-row">
+          <label>Quantity</label>
+          <input type="number" id="cust-quantity" value="1" min="1" style="background:#000; margin-bottom:12px;">
+        </div>
+        <div class="form-row">
+          <label>Select Size Array Options</label>
+          <div id="modal-size-container" class="size-btn-group"></div>
+        </div>
+        <div class="form-row"><label>Full Name</label><input type="text" id="cust-name"></div>
+        <div class="form-row"><label>Your Contact Line</label><input type="tel" id="cust-phone"></div>
+        <div class="form-row"><label>Delivery Destination</label><input type="text" id="cust-location"></div>
+        <button id="confirm-order-btn" style="margin-top:10px;">Submit Order Specification</button>
+      </div>
+    </div>
+
+    <div id="success-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div style="text-align: center; padding: 10px 0;">
+          <div style="font-size: 2.5rem; color: var(--success); margin-bottom: 15px;">✓</div>
+          <div class="modal-title">Order Logged Successfully</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; line-height: 1.5;">Your transaction reference has been populated inside the database terminal. To complete processing, contact our shop directly at:</p>
+          <div id="success-phone-display" class="phone-highlight-block">+251943910788</div>
+          <button onclick="closeSuccessModal()">Return to Catalog</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="lock-view" class="lock-view hidden">
+      <div class="lock-box">
+        <h2>OWNER GATEWAY</h2>
+        <input type="password" id="passcode-field" maxlength="6" placeholder="••••••" oninput="handlePinEntry(this)" class="pin-display">
+        <div id="lock-error" class="error-log"></div>
+      </div>
+    </div>
+
+    <div id="dashboard-view" class="hidden">
+      <div class="metrics-bar">
+        <div class="stat-badge"><div class="stat-label">Available Units</div><div id="m-stock" class="stat-val">0</div></div>
+        <div class="stat-badge"><div class="stat-label">Total Logs Sold</div><div id="m-sold" class="stat-val">0</div></div>
+        <div class="stat-badge"><div class="stat-label">System Revenue</div><div id="m-rev" class="stat-val">0 ETB</div></div>
+      </div>
+
+      <div class="admin-triple-split">
+        <div>
+          <div class="admin-form-panel">
+            <h3 class="form-section-title">Stock Input Management</h3>
+            <div class="form-row"><label>Model Designation</label><input type="text" id="f-name"></div>
+            <div class="form-row"><label>Brand Line</label><input type="text" id="f-brand"></div>
+            <div class="form-row"><label>Unit Price (ETB)</label><input type="number" id="f-price"></div>
+            <div class="form-row"><label>Sizes (Separate with spaces or commas)</label><input type="text" id="f-sizes" placeholder="e.g. 40 41 42 43"></div>
+            
+            <div class="form-row">
+              <label>ImgBB Cloud Upload Portal</label>
+              <div class="terminal-upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <div style="font-size:0.8rem; font-weight:600; color:#fff;">[ CHOOSE IMAGE OR DRAG ASSET HERE ]</div>
+                <div id="upload-status" class="upload-status-lbl">Status: System Idle</div>
+                <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelection(this.files[0])">
+              </div>
+            </div>
+
+            <div class="form-row"><label>Source Image Asset Link</label><input type="text" id="f-img" placeholder="Will populate automatically after upload"></div>
+            <div class="form-row"><label>Stock Volumetrics Quantity</label><input type="number" id="f-quantity" value="1"></div>
+            <button onclick="submitNewInventoryItem()">Push to Live Catalog</button>
+          </div>
+
+          <div class="admin-form-panel">
+            <h3 class="form-section-title">Core Engine Parameters</h3>
+            <div class="form-row"><label>Manager Telephone Number</label><input type="text" id="s-phone"></div>
+            <div class="form-row"><label>ImgBB Cloud Key Token</label><input type="text" id="s-imgbb-key" placeholder="Paste your api key token here"></div>
+            <div class="form-row"><label>Update Terminal Access PIN</label><input type="password" id="s-pin" placeholder="Enter new sequence pin"></div>
+            <button onclick="saveSystemConfigurations()" style="background:#111; color:#fff; border:1px solid var(--border);">Commit System Updates</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="ledger-title">Active Inventory Records</h3>
+          <div class="admin-search-wrapper">
+            <input type="text" id="admin-inventory-search" placeholder="Type to search active inventory..." oninput="filterAdminInventoryMatrix()">
+          </div>
+          <div id="admin-shoes-ledger"></div>
+        </div>
+
+        <div><h3 class="ledger-title">Operational Orders Log</h3><div id="admin-orders-ledger"></div></div>
+      </div>
+    </div>
+
+    <div id="edit-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <button class="close-modal" onclick="closeEditModal()">✕</button>
+        <div class="modal-title">Modify Unit Configurations</div>
+        <div class="modal-subtitle">Altering hardware metrics mapping data</div>
+        <input type="hidden" id="e-id">
+        <div class="form-row"><label>Model Title</label><input type="text" id="e-name"></div>
+        <div class="form-row"><label>Brand Classification</label><input type="text" id="e-brand"></div>
+        <div class="form-row"><label>Price Parameter (ETB)</label><input type="number" id="e-price"></div>
+        <div class="form-row"><label>Sizes Index Array</label><input type="text" id="e-sizes"></div>
+        
+        <div class="form-row">
+          <label>Update Asset Image</label>
+          <div class="terminal-upload-zone" onclick="document.getElementById('edit-file-input').click()">
+            <div style="font-size:0.8rem; color:#fff;">[ CHOOSE NEW ASSET ]</div>
+            <div id="edit-upload-status" class="upload-status-lbl">Status: System Idle</div>
+            <input type="file" id="edit-file-input" accept="image/*" class="hidden" onchange="handleEditFileSelection(this.files[0])">
+          </div>
+        </div>
+
+        <div class="form-row"><label>Image Asset Reference</label><input type="text" id="e-img"></div>
+        <div class="form-row"><label>Volume Balance Quantity</label><input type="number" id="e-quantity"></div>
+        <button onclick="submitEditInventoryItem()">Commit Changes</button>
+      </div>
+    </div>
+
+    <div id="admin-sell-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <button class="close-modal" onclick="closeAdminSellModal()">✕</button>
+        <div class="modal-title" id="ad-sell-title">Record Direct Sale</div>
+        <div class="modal-subtitle" id="ad-sell-stock-status">Available Stock: 0</div>
+        
+        <input type="hidden" id="ad-sell-id">
+        <div class="form-row">
+          <label>Target Shoe Size Number</label>
+          <div id="ad-sell-size-container" class="size-btn-group"></div>
+        </div>
+        <div class="form-row">
+          <label>Quantity Transacted</label>
+          <input type="number" id="ad-sell-quantity" value="1" min="1">
+        </div>
+        <div class="form-row"><label>Customer Name Reference</label><input type="text" id="ad-sell-name" value="Direct Shop Purchase"></div>
+        <div class="form-row"><label>Customer Phone Contact</label><input type="text" id="ad-sell-phone" value="In-Store Counter"></div>
+        <button onclick="submitAdminDirectSale()" class="btn-sell-direct" style="margin-top:10px;">Commit Sale Record</button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="brand-watermark-footer" id="public-watermark">
+    <div class="watermark-left">
+      <img src="BLACK&WHITE logo.png" class="dev-logo-asset" alt="BLACK & WHITE">
+      <div class="logo-meta">
+        <strong>BLACK & WHITE</strong><br>
+        <span style="color:var(--text-muted); font-size:10px;">Developer Phone: +251943910788</span>
+      </div>
+    </div>
+    <div class="watermark-right" id="watermark-phone-target">
+      Order Desk Reference: <strong>Loading...</strong>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = "https://mikililand-shoes.onrender.com";
+    let catalogCache = [];
+    let selectedOrderSizes = [];
+    let activeShoeTarget = null;
+    let liveAdminPhone = "+251943910788";
+    let selectedAdminSellSize = "";
+
+    window.addEventListener('hashchange', handleAppRouting);
+    window.addEventListener('DOMContentLoaded', async () => {
+      setupDragAndDropZones();
+      await pullPublicConfiguration();
+      handleAppRouting();
+    });
+
+    function setupDragAndDropZones() {
+      const dropZone = document.getElementById('drop-zone');
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.style.borderColor = '#fff'; }, false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--border)'; }, false);
+      });
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt.files && dt.files[0]) handleFileSelection(dt.files[0]);
+      });
+    }
+
+    async function handleFileSelection(file) {
+      if (!file) return;
+      const statusLbl = document.getElementById('upload-status');
+      statusLbl.innerText = "Status: Transmitting to ImgBB Cloud...";
+      statusLbl.className = "upload-status-lbl active-upload";
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': localStorage.getItem('admin_session_token') },
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('f-img').value = data.url;
+          statusLbl.innerText = "Status: Upload Success Sync";
+          statusLbl.className = "upload-status-lbl success-upload";
+        } else {
+          alert(data.message || "Upload matrix failed.");
+          statusLbl.innerText = "Status: Upload Failed";
+          statusLbl.className = "upload-status-lbl";
+        }
+      } catch (e) {
+        statusLbl.innerText = "Status: Connection Error";
+        statusLbl.className = "upload-status-lbl";
+      }
+    }
+
+    async function handleEditFileSelection(file) {
+      if (!file) return;
+      const statusLbl = document.getElementById('edit-upload-status');
+      statusLbl.innerText = "Status: Transmitting...";
+      statusLbl.className = "upload-status-lbl active-upload";
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': localStorage.getItem('admin_session_token') },
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('e-img').value = data.url;
+          statusLbl.innerText = "Status: Ready";
+          statusLbl.className = "upload-status-lbl success-upload";
+        } else {
+          statusLbl.innerText = "Status: Failed";
+        }
+      } catch (e) {
+        statusLbl.innerText = "Status: Error";
+      }
+    }
+
+    async function pullPublicConfiguration() {
+      try {
+        const res = await fetch(`${API_BASE}/config`);
+        const data = await res.json();
+        if (data.admin_phone) {
+          liveAdminPhone = data.admin_phone;
+          document.getElementById('watermark-phone-target').innerHTML = `Order Desk Reference: <strong>${liveAdminPhone}</strong>`;
+        }
+      } catch (e) {
+        document.getElementById('watermark-phone-target').innerHTML = `Order Desk Reference: <strong>${liveAdminPhone}</strong>`;
+      }
+    }
+
+    function parseCleanSizes(rawData) {
+      if (!rawData) return [];
+      // Handle JSON array (from database)
+      if (typeof rawData === 'string' && (rawData.startsWith('[') || rawData.startsWith('"'))) {
+        try {
+          let parsed = JSON.parse(rawData);
+          if (Array.isArray(parsed)) return parsed;
+          if (typeof parsed === 'string') return parsed.replace(/,/g, ' ').trim().split(/\s+/).filter(s => s !== '');
+        } catch (e) {}
+      }
+      // Handle plain string
+      if (typeof rawData === 'string') {
+        let splitArr = rawData.replace(/,/g, ' ').trim().split(/\s+/);
+        return [...new Set(splitArr)].filter(s => s !== '');
+      }
+      // Handle array
+      if (Array.isArray(rawData)) return rawData;
+      return [];
+    }
+
+    function handleAppRouting() {
+      document.getElementById('customer-view').classList.add('hidden');
+      document.getElementById('lock-view').classList.add('hidden');
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('public-watermark').classList.remove('hidden');
+      
+      if (window.location.hash === '#admin') {
+        document.getElementById('public-watermark').classList.add('hidden'); 
+        if (localStorage.getItem('admin_session_token')) {
+          launchAdminDashboard();
+          document.getElementById('dashboard-view').classList.remove('hidden');
+        } else {
+          document.getElementById('lock-view').classList.remove('hidden');
+          document.getElementById('passcode-field').value = '';
+          document.getElementById('passcode-field').focus();
+        }
+        document.getElementById('nav-action').innerHTML = `<button class="btn-sm" style="background:#ff453a; color:white;" onclick="localStorage.clear(); window.location.hash='';">Exit Console</button>`;
+      } else {
+        document.getElementById('customer-view').classList.remove('hidden');
+        loadCustomerStorefrontGrid();
+        document.getElementById('nav-action').innerHTML = `<button class="btn-sm" style="background:transparent; color:white; border:1px solid var(--border);" onclick="window.location.hash='#admin';">Console Gateway</button>`;
+      }
+    }
+
+    document.getElementById('brand-logo').onclick = () => { window.location.hash = ''; };
+
+    async function loadCustomerStorefrontGrid() {
+      try {
+        const res = await fetch(`${API_BASE}/shoes`);
+        catalogCache = await res.json();
+        renderCustomerGrid(catalogCache);
+      } catch (err) { console.error("Database connectivity pipeline offline."); }
+    }
+
+    function renderCustomerGrid(items) {
+      const wrapper = document.getElementById('catalog-grid');
+      wrapper.innerHTML = items.length === 0 ? `<p style="color:var(--text-muted); padding:20px 0;">No active stock profiles inside core memory matrix.</p>` : '';
+      
+      items.forEach(shoe => {
+        const sizeTokens = parseCleanSizes(shoe.sizes);
+        let sizeBadgesHTML = sizeTokens.map(sz => `<span class="size-token-badge">${sz}</span>`).join('');
+
+        wrapper.innerHTML += `
+          <div class="shoe-card">
+            <div class="image-frame"><img src="${shoe.image_url}" onerror="this.src='https://placehold.co/300x300/050505/ffffff?text=B%26W+SUPPLY'"></div>
+            <div class="card-info">
+              <div>
+                <div class="brand">${shoe.brand}</div>
+                <div class="name">${shoe.name}</div>
+              </div>
+              <div>
+                <div class="price">${shoe.price.toLocaleString()} ETB</div>
+                <div class="sizes-rendered-grid">${sizeBadgesHTML}</div>
+                <button onclick="launchOrderModal(${JSON.stringify(shoe).replace(/"/g, '&quot;')})">Checkout</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function filterCatalogGrid() {
+      const q = document.getElementById('store-search').value.toLowerCase();
+      renderCustomerGrid(catalogCache.filter(i => i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q)));
+    }
+
+    function filterAdminInventoryMatrix() {
+      const query = document.getElementById('admin-inventory-search').value.toLowerCase().trim();
+      const items = document.querySelectorAll('#admin-shoes-ledger .ledger-item');
+      items.forEach(item => {
+        if (item.textContent.toLowerCase().includes(query)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function launchOrderModal(shoe) {
+      activeShoeTarget = shoe;
+      selectedOrderSizes = [];
+      document.getElementById('cust-quantity').value = 1;
+      document.getElementById('m-shoe-title').innerText = `${shoe.brand} ${shoe.name}`;
+      document.getElementById('m-shoe-price').innerText = `${shoe.price.toLocaleString()} ETB`;
+      
+      const sizeContainer = document.getElementById('modal-size-container');
+      sizeContainer.innerHTML = '';
+      
+      const sizeTokens = parseCleanSizes(shoe.sizes);
+      sizeTokens.forEach(cleanSize => {
+        sizeContainer.innerHTML += `<button type="button" class="size-choice-btn" onclick="toggleMultiSizeSelection(this, '${cleanSize}')">${cleanSize}</button>`;
+      });
+      
+      document.getElementById('confirm-order-btn').onclick = submitCustomerOrder;
+      document.getElementById('order-modal').classList.remove('hidden');
+    }
+
+    function toggleMultiSizeSelection(btn, size) {
+      if (btn.classList.contains('active')) {
+        btn.classList.remove('active');
+        selectedOrderSizes = selectedOrderSizes.filter(s => s !== size);
+      } else {
+        btn.classList.add('active');
+        selectedOrderSizes.push(size);
+      }
+    }
+
+    function closeCustomerModal() { document.getElementById('order-modal').classList.add('hidden'); }
+    function closeSuccessModal() { document.getElementById('success-modal').classList.add('hidden'); }
+
+    async function submitCustomerOrder() {
+      const name = document.getElementById('cust-name').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      const location = document.getElementById('cust-location').value.trim();
+      const qty = parseInt(document.getElementById('cust-quantity').value) || 1;
+
+      if (selectedOrderSizes.length === 0 || !name || !phone || !location) { 
+        alert("Verification failure: Complete all input nodes."); 
+        return; 
+      }
+
+      const payload = { 
+        shoe_id: activeShoeTarget.id, 
+        shoe_title: `${activeShoeTarget.brand} ${activeShoeTarget.name}`, 
+        customer_name: name, 
+        customer_phone: phone, 
+        delivery_location: location, 
+        selected_size: selectedOrderSizes.join(', '),
+        quantity: qty
+        };
+
+      try {
+        const res = await fetch(`${API_BASE}/orders`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        if (res.ok) {
+          closeCustomerModal();
+          document.getElementById('success-phone-display').innerText = liveAdminPhone;
+          document.getElementById('success-modal').classList.remove('hidden');
+          
+          document.getElementById('cust-name').value = '';
+          document.getElementById('cust-phone').value = '';
+          document.getElementById('cust-location').value = '';
+          loadCustomerStorefrontGrid();
+        }
+      } catch (err) { alert("Data pipeline exception."); }
+    }
+
+    function handlePinEntry(input) { if (input.value.length === 6) { verifyPasscodeGateway(input.value); } }
+    async function verifyPasscodeGateway(pin) {
+      try {
+        const res = await fetch(`${API_BASE}/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({passcode: pin}) });
+        const data = await res.json();
+        if (data.success) { localStorage.setItem('admin_session_token', data.token); handleAppRouting(); } 
+        else { document.getElementById('lock-error').innerText = "Access denied."; document.getElementById('passcode-field').value = ''; }
+      } catch (e) { document.getElementById('lock-error').innerText = "System interface offline."; }
+    }
+
+    async function launchAdminDashboard() {
+      const token = localStorage.getItem('admin_session_token');
+      try {
+        const res = await fetch(`${API_BASE}/admin/dashboard`, { headers: {'Authorization': token} });
+        if (res.status === 401) { localStorage.clear(); handleAppRouting(); return; }
+        const data = await res.json();
+
+        document.getElementById('m-stock').innerText = data.metrics.total_stock;
+        document.getElementById('m-sold').innerText = data.metrics.total_sold;
+        document.getElementById('m-rev').innerText = data.metrics.total_revenue.toLocaleString() + " ETB";
+        
+        if (data.admin_phone) {
+          liveAdminPhone = data.admin_phone;
+          document.getElementById('s-phone').value = data.admin_phone;
+        }
+        if (data.imgbb_key) {
+          document.getElementById('s-imgbb-key').value = data.imgbb_key;
+        }
+        
+        const shoeLedger = document.getElementById('admin-shoes-ledger');
+        shoeLedger.innerHTML = '';
+        data.shoes.forEach(shoe => {
+          const isSold = shoe.status === 'sold' || shoe.quantity <= 0;
+          const sizeTokens = parseCleanSizes(shoe.sizes);
+          let sizeBadges = sizeTokens.map(s => `<span class="size-token-badge">${s}</span>`).join('');
+
+          shoeLedger.innerHTML += `
+            <div class="ledger-item ${isSold ? 'sold-out-row' : ''}">
+              <div class="ledger-header">
+                <div>
+                  <strong style="color:white; font-size:0.95rem;">${shoe.brand} ${shoe.name}</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin: 4px 0;">${shoe.price.toLocaleString()} ETB | Qty: ${shoe.quantity}</div>
+                  <div class="sizes-rendered-grid">${sizeBadges}</div>
+                </div>
+                <span class="tag-status ${shoe.status}">${shoe.status}</span>
+              </div>
+              <div class="actions-group" style="flex-wrap: wrap; gap: 4px;">
+                ${!isSold ? `<button class="btn-sm btn-sell-direct" onclick='launchAdminSellModal(${JSON.stringify(shoe).replace(/"/g, '&quot;')})'>SELL</button>` : ''}
+                <button class="btn-sm btn-edit-action" onclick="openEditModal(${JSON.stringify(shoe).replace(/"/g, '&quot;')})">Edit</button>
+                <button class="btn-sm btn-sold-toggle" onclick="toggleItemStatus(${shoe.id}, '${isSold ? 'available' : 'sold'}')">Toggle</button>
+                <button class="btn-sm btn-del-action" onclick="deleteInventoryRecord(${shoe.id})">Del</button>
+              </div>
+            </div>
+          `;
+        });
+
+        filterAdminInventoryMatrix();
+
+        const ordersLedger = document.getElementById('admin-orders-ledger');
+        ordersLedger.innerHTML = data.orders.length === 0 ? `<p style="color:var(--text-muted); font-size:0.75rem;">Feed buffer completely clear.</p>` : '';
+        data.orders.forEach(ord => {
+          const isDelivered = ord.order_status === 'delivered';
+          ordersLedger.innerHTML += `
+            <div class="ledger-item">
+              <div class="ledger-header">
+                <div>
+                  <strong style="color:white; font-size:1rem;">${ord.customer_name}</strong>
+                  <div style="font-size:0.8rem; color:var(--accent); margin-top:4px; font-weight:600;">Tel: ${ord.customer_phone}</div>
+                  <div style="font-size:0.8rem; color:#fff; margin-top:4px;">Item: ${ord.shoe_title} x [ ${ord.quantity || 1} Pcs ]</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Size Matrix: ${ord.selected_size}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Location: ${ord.delivery_location}</div>
+                </div>
+                <span class="tag-status ${ord.order_status}">${ord.order_status}</span>
+              </div>
+              <div class="actions-group">
+                ${!isDelivered ? `<button class="btn-sm btn-deliver-action" onclick="markOrderDelivered(${ord.id})">Fulfill Order</button>` : ''}
+                <button class="btn-sm btn-del-action" onclick="deleteOrderRecord(${ord.id})">Clear</button>
+              </div>
+            </div>
+          `;
+        });
+      } catch (err) { console.error("Interface compilation fault."); }
+    }
+
+    function launchAdminSellModal(shoe) {
+      selectedAdminSellSize = "";
+      document.getElementById('ad-sell-id').value = shoe.id;
+      document.getElementById('ad-sell-title').innerText = `Record Sale: ${shoe.brand} ${shoe.name}`;
+      document.getElementById('ad-sell-stock-status').innerText = `Available Stock Metric: ${shoe.quantity} units`;
+      document.getElementById('ad-sell-quantity').value = 1;
+      document.getElementById('ad-sell-quantity').max = shoe.quantity;
+      document.getElementById('ad-sell-name').value = "Direct Shop Purchase";
+      document.getElementById('ad-sell-phone').value = "In-Store Counter";
+
+      const container = document.getElementById('ad-sell-size-container');
+      container.innerHTML = '';
+      
+      const sizesArray = parseCleanSizes(shoe.sizes);
+      sizesArray.forEach(sz => {
+        container.innerHTML += `<button type="button" class="size-choice-btn" onclick="selectAdminSellSize(this, '${sz}')">${sz}</button>`;
+      });
+
+      document.getElementById('admin-sell-modal').classList.remove('hidden');
+    }
+
+    function selectAdminSellSize(btn, sz) {
+      const parent = btn.parentElement;
+      parent.querySelectorAll('.size-choice-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedAdminSellSize = sz;
+    }
+
+    function closeAdminSellModal() { document.getElementById('admin-sell-modal').classList.add('hidden'); }
+
+    async function submitAdminDirectSale() {
+      const id = document.getElementById('ad-sell-id').value;
+      const qty = parseInt(document.getElementById('ad-sell-quantity').value) || 1;
+      const name = document.getElementById('ad-sell-name').value.trim();
+      const phone = document.getElementById('ad-sell-phone').value.trim();
+
+      if (!selectedAdminSellSize) { alert("Selection Failure: Identify the tracking shoe number."); return; }
+
+      const payload = {
+        quantity: qty,
+        size: selectedAdminSellSize,
+        customer_name: name,
+        customer_phone: phone,
+        delivery_location: "Addis Ababa Shop Desk"
+      };
+
+      const res = await fetch(`${API_BASE}/admin/shoes/${id}/sell`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('admin_session_token') },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) { closeAdminSellModal(); launchAdminDashboard(); } 
+      else { const data = await res.json(); alert(data.message || "Pipeline execution failure."); }
+    }
+
+    async function submitNewInventoryItem() {
+      const payload = {
+        name: document.getElementById('f-name').value.trim(),
+        brand: document.getElementById('f-brand').value.trim(),
+        price: document.getElementById('f-price').value,
+        sizes: document.getElementById('f-sizes').value.trim(),
+        image_url: document.getElementById('f-img').value.trim(),
+        quantity: document.getElementById('f-quantity').value
+      };
+      if(!payload.name || !payload.brand || !payload.price || !payload.sizes || !payload.image_url) { 
+        alert("Missing operational parameters or uncompleted cloud uploads."); 
+        return; 
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/shoes`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'Authorization': localStorage.getItem('admin_session_token')},
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok && data.success) {
+          alert("Shoe added to live catalog successfully!");
+          ['f-name','f-brand','f-price','f-sizes','f-img','f-quantity'].forEach(id => document.getElementById(id).value = (id === 'f-quantity' ? 1 : ''));
+          document.getElementById('upload-status').innerText = "Status: System Idle";
+          document.getElementById('upload-status').className = "upload-status-lbl";
+          await launchAdminDashboard();
+        } else {
+          alert("Error: " + (data.error || data.message || "Failed to add shoe"));
+        }
+      } catch (e) {
+        alert("Connection error: " + e.message);
+      }
+    }
+
+    async function saveSystemConfigurations() {
+      const pinVal = document.getElementById('s-pin').value.trim();
+      const phoneVal = document.getElementById('s-phone').value.trim();
+      const keyVal = document.getElementById('s-imgbb-key').value.trim();
+      const payload = {};
+      
+      if (pinVal) payload.new_pin = pinVal;
+      if (phoneVal) payload.admin_phone = phoneVal;
+      payload.imgbb_key = keyVal;
+
+      const res = await fetch(`${API_BASE}/admin/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('admin_session_token') },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        alert("System configurations updated.");
+        document.getElementById('s-pin').value = '';
+        await pullPublicConfiguration();
+        launchAdminDashboard();
+      } else {
+        alert("Failed to sync configurations.");
+      }
+    }
+
+    function openEditModal(shoe) {
+      document.getElementById('e-id').value = shoe.id;
+      document.getElementById('e-name').value = shoe.name;
+      document.getElementById('e-brand').value = shoe.brand;
+      document.getElementById('e-price').value = shoe.price;
+      document.getElementById('e-sizes').value = shoe.sizes;
+      document.getElementById('e-img').value = shoe.image_url;
+      document.getElementById('e-quantity').value = shoe.quantity || 1;
+      document.getElementById('edit-upload-status').innerText = "Status: System Idle";
+      document.getElementById('edit-upload-status').className = "upload-status-lbl";
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+    async function submitEditInventoryItem() {
+      const id = document.getElementById('e-id').value;
+      const payload = {
+        name: document.getElementById('e-name').value.trim(),
+        brand: document.getElementById('e-brand').value.trim(),
+        price: document.getElementById('e-price').value,
+        sizes: document.getElementById('e-sizes').value.trim(),
+        image_url: document.getElementById('e-img').value.trim(),
+        quantity: document.getElementById('e-quantity').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/shoes/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json', 'Authorization': localStorage.getItem('admin_session_token')},
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          alert("Shoe updated successfully!");
+          closeEditModal();
+          await launchAdminDashboard();
+        } else {
+          alert("Error: " + (data.error || data.message || "Failed to update"));
+        }
+      } catch (e) {
+        alert("Connection error: " + e.message);
+      }
+    }
+
+    async function toggleItemStatus(id, targetStatus) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/shoes/${id}/status`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json', 'Authorization': localStorage.getItem('admin_session_token')},
+          body: JSON.stringify({status: targetStatus})
+        });
+        if (res.ok) {
+          await launchAdminDashboard();
+        } else {
+          alert("Failed to toggle status");
+        }
+      } catch (e) {
+        alert("Connection error: " + e.message);
+      }
+    }
+
+    async function deleteInventoryRecord(id) {
+      if (!confirm("Confirm hard deletion sequence?")) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/shoes/${id}`, { 
+          method: 'DELETE', 
+          headers: {'Authorization': localStorage.getItem('admin_session_token')} 
+        });
+        if (res.ok) {
+          alert("Shoe deleted successfully");
+          await launchAdminDashboard();
+        } else {
+          alert("Failed to delete shoe");
+        }
+      } catch (e) {
+        alert("Connection error: " + e.message);
+      }
+    }
+
+    async function markOrderDelivered(orderId) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/orders/${orderId}/deliver`, { 
+          method: 'PUT', 
+          headers: {'Authorization': localStorage.getItem('admin_session_token')} 
+        });
+        if (res.ok) {
+          await launchAdminDashboard();
+        } else {
+          alert("Failed to mark as delivered");
+        }
+      } catch (e) {
+        alert("Connection error: " + e.message);
+      }
+    }
+
+    async function deleteOrderRecord(orderId) {
+      if (!confirm("Clear this log entry?")) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/orders/${orderId}`, { 
+          method: 'DELETE', 
+          headers: {'Authorization': localStorage.getItem('admin_session_token')} 
+        });
+        if (res.ok) {
+          alert("Order deleted successfully");
+          await launchAdminDashboard();
+        } else {
+          alert("Failed to delete order");
+        }
+      } catch (e) {
+        alert("Connection error: " + e.message);
+      }
+    }
+  </script>
+</body>
+</html>

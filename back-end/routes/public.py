@@ -1,0 +1,2 @@
+# Public routes are currently integrated in app.py
+# This file is reserved for future public-specific endpoints
