@@ -618,7 +618,7 @@
         const ordersLedger = document.getElementById('admin-orders-ledger');
         ordersLedger.innerHTML = data.orders.length === 0 ? `<p style="color:var(--text-muted); font-size:0.75rem;">Feed buffer completely clear.</p>` : '';
         data.orders.forEach(ord => {
-          const isDelivered = ord.order_status === 'delivered';
+          const isDelivered = ord.status === 'delivered';
           ordersLedger.innerHTML += `
             <div class="ledger-item">
               <div class="ledger-header">
