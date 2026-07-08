@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin
 
-Sitemap: https://mikililandshoe.netlify.app/sitemap.xml
+Sitemap: https://mikililand-shoe.netlify.app/sitemap.xml
