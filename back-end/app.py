@@ -46,11 +46,13 @@ def get_config():
         return jsonify({"error": str(e)}), 500
 
 # 2. Shoes Catalog Endpoint (GET - Public)
+# 2. Shoes Catalog Endpoint (GET - Public)
 @app.route("/shoes", methods=["GET"])
 def get_shoes():
     try:
         with db_cursor() as cur:
-            cur.execute("SELECT * FROM shoes ORDER BY id DESC;")
+            # Fix: Only fetch items that are actively set to 'available'
+            cur.execute("SELECT * FROM shoes WHERE status = 'available' ORDER BY id DESC;")
             shoes = cur.fetchall()
         return jsonify(shoes), 200
     except Exception as e:
