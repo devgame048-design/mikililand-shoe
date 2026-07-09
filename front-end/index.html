@@ -300,8 +300,8 @@
     </div>
   </footer>
 
-  <script>
-    const API_BASE = "https://mikililand-shoe.onrender.com";
+ <script>
+    const API_BASE = "https://mikililand-shoes.onrender.com";
     let catalogCache = [];
     let selectedOrderSizes = [];
     let activeShoeTarget = null;
@@ -309,21 +309,20 @@
     let selectedAdminSellSize = "";
 
     window.addEventListener('hashchange', handleAppRouting);
-    window.addEventListener('DOMContentLoaded', async () => {
+    window.addEventListener('DOMContentLoaded', () => {
       setupDragAndDropZones();
       
-      // Fix: Run routing immediately so the UI locks down BEFORE waiting for network calls
+      // FIX 1: Run app routing instantly so views switch immediately without freezing 
+      // on network calls while Render wakes up from sleep mode.
       handleAppRouting();
       
-      try {
-        await pullPublicConfiguration();
-      } catch (e) {
-        console.error("Delayed public configuration fetch:", e);
-      }
+      // Pull public settings asynchronously in the background
+      pullPublicConfiguration();
     });
-    
+
     function setupDragAndDropZones() {
       const dropZone = document.getElementById('drop-zone');
+      if (!dropZone) return; // Prevent script breaks if element is not rendered
       ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.style.borderColor = '#fff'; }, false);
       });
@@ -410,7 +409,6 @@
 
     function parseCleanSizes(rawData) {
       if (!rawData) return [];
-      // Handle JSON array (from database)
       if (typeof rawData === 'string' && (rawData.startsWith('[') || rawData.startsWith('"'))) {
         try {
           let parsed = JSON.parse(rawData);
@@ -418,17 +416,16 @@
           if (typeof parsed === 'string') return parsed.replace(/,/g, ' ').trim().split(/\s+/).filter(s => s !== '');
         } catch (e) {}
       }
-      // Handle plain string
       if (typeof rawData === 'string') {
         let splitArr = rawData.replace(/,/g, ' ').trim().split(/\s+/);
         return [...new Set(splitArr)].filter(s => s !== '');
       }
-      // Handle array
       if (Array.isArray(rawData)) return rawData;
       return [];
     }
 
     function handleAppRouting() {
+      // Force visual lockdown instantly on layout screens
       document.getElementById('customer-view').classList.add('hidden');
       document.getElementById('lock-view').classList.add('hidden');
       document.getElementById('dashboard-view').classList.add('hidden');
@@ -437,8 +434,9 @@
       if (window.location.hash === '#admin') {
         document.getElementById('public-watermark').classList.add('hidden'); 
         if (localStorage.getItem('admin_session_token')) {
+          // FIX 2: Security Patch. Removed direct `.classList.remove('hidden')` from here.
+          // The dashboard is now kept completely hidden until the server approves the token.
           launchAdminDashboard();
-          document.getElementById('dashboard-view').classList.remove('hidden');
         } else {
           document.getElementById('lock-view').classList.remove('hidden');
           document.getElementById('passcode-field').value = '';
@@ -557,7 +555,7 @@
         delivery_location: location, 
         selected_size: selectedOrderSizes.join(', '),
         quantity: qty
-        };
+      };
 
       try {
         const res = await fetch(`${API_BASE}/orders`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
@@ -579,8 +577,13 @@
       try {
         const res = await fetch(`${API_BASE}/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({passcode: pin}) });
         const data = await res.json();
-        if (data.success) { localStorage.setItem('admin_session_token', data.token); handleAppRouting(); } 
-        else { document.getElementById('lock-error').innerText = "Access denied."; document.getElementById('passcode-field').value = ''; }
+        if (data.success) { 
+          localStorage.setItem('admin_session_token', data.token); 
+          handleAppRouting(); 
+        } else { 
+          document.getElementById('lock-error').innerText = "Access denied."; 
+          document.getElementById('passcode-field').value = ''; 
+        }
       } catch (e) { document.getElementById('lock-error').innerText = "System interface offline."; }
     }
 
@@ -588,7 +591,15 @@
       const token = localStorage.getItem('admin_session_token');
       try {
         const res = await fetch(`${API_BASE}/admin/dashboard`, { headers: {'Authorization': token} });
-        if (res.status === 401) { localStorage.clear(); handleAppRouting(); return; }
+        
+        // FIX 3: Strict security bounce. Clear everything and kick out empty/fake tokens immediately.
+        if (res.status === 401 || !res.ok) { 
+          localStorage.clear(); 
+          window.location.hash = '';
+          handleAppRouting(); 
+          return; 
+        }
+        
         const data = await res.json();
 
         document.getElementById('m-stock').innerText = data.metrics.total_stock;
@@ -634,11 +645,8 @@
 
         const ordersLedger = document.getElementById('admin-orders-ledger');
         ordersLedger.innerHTML = data.orders.length === 0 ? `<p style="color:var(--text-muted); font-size:0.75rem;">Feed buffer completely clear.</p>` : '';
-       data.orders.forEach(ord => {
-          // Fix: Read 'status' with exact capitalized matching from the backend database
-          const isDelivered = ord.status === 'Delivered';
-          const statusClass = ord.status ? ord.status.toLowerCase() : 'pending';
-          
+        data.orders.forEach(ord => {
+          const isDelivered = ord.order_status === 'delivered';
           ordersLedger.innerHTML += `
             <div class="ledger-item">
               <div class="ledger-header">
@@ -649,7 +657,7 @@
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Size Matrix: ${ord.selected_size}</div>
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Location: ${ord.delivery_location}</div>
                 </div>
-                <span class="tag-status ${statusClass}">${ord.status || 'Pending'}</span>
+                <span class="tag-status ${ord.order_status}">${ord.order_status}</span>
               </div>
               <div class="actions-group">
                 ${!isDelivered ? `<button class="btn-sm btn-deliver-action" onclick="markOrderDelivered(${ord.id})">Fulfill Order</button>` : ''}
@@ -658,7 +666,15 @@
             </div>
           `;
         });
-      } catch (err) { console.error("Interface compilation fault."); }
+
+        // FIX 4: Only show the dashboard to the browser layout block AFTER all records are authenticated and verified
+        document.getElementById('dashboard-view').classList.remove('hidden');
+
+      } catch (err) { 
+        console.error("Interface compilation fault."); 
+        // Force back to lock view if request times out or breaks due to sleeping servers
+        document.getElementById('lock-view').classList.remove('hidden');
+      }
     }
 
     function launchAdminSellModal(shoe) {
@@ -895,6 +911,6 @@
         alert("Connection error: " + e.message);
       }
     }
-  </script>
+</script>
 </body>
 </html>
