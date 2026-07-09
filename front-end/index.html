@@ -300,8 +300,8 @@
     </div>
   </footer>
 
- <script>
-    const API_BASE = "https://mikililand-shoe.onrender.com";
+<script>
+    const API_BASE = "https://mikililand-shoes.onrender.com";
     let catalogCache = [];
     let selectedOrderSizes = [];
     let activeShoeTarget = null;
@@ -311,18 +311,13 @@
     window.addEventListener('hashchange', handleAppRouting);
     window.addEventListener('DOMContentLoaded', () => {
       setupDragAndDropZones();
-      
-      // FIX 1: Run app routing instantly so views switch immediately without freezing 
-      // on network calls while Render wakes up from sleep mode.
       handleAppRouting();
-      
-      // Pull public settings asynchronously in the background
       pullPublicConfiguration();
     });
 
     function setupDragAndDropZones() {
       const dropZone = document.getElementById('drop-zone');
-      if (!dropZone) return; // Prevent script breaks if element is not rendered
+      if (!dropZone) return;
       ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.style.borderColor = '#fff'; }, false);
       });
@@ -425,7 +420,6 @@
     }
 
     function handleAppRouting() {
-      // Force visual lockdown instantly on layout screens
       document.getElementById('customer-view').classList.add('hidden');
       document.getElementById('lock-view').classList.add('hidden');
       document.getElementById('dashboard-view').classList.add('hidden');
@@ -434,8 +428,6 @@
       if (window.location.hash === '#admin') {
         document.getElementById('public-watermark').classList.add('hidden'); 
         if (localStorage.getItem('admin_session_token')) {
-          // FIX 2: Security Patch. Removed direct `.classList.remove('hidden')` from here.
-          // The dashboard is now kept completely hidden until the server approves the token.
           launchAdminDashboard();
         } else {
           document.getElementById('lock-view').classList.remove('hidden');
@@ -592,7 +584,6 @@
       try {
         const res = await fetch(`${API_BASE}/admin/dashboard`, { headers: {'Authorization': token} });
         
-        // FIX 3: Strict security bounce. Clear everything and kick out empty/fake tokens immediately.
         if (res.status === 401 || !res.ok) { 
           localStorage.clear(); 
           window.location.hash = '';
@@ -645,8 +636,13 @@
 
         const ordersLedger = document.getElementById('admin-orders-ledger');
         ordersLedger.innerHTML = data.orders.length === 0 ? `<p style="color:var(--text-muted); font-size:0.75rem;">Feed buffer completely clear.</p>` : '';
+        
         data.orders.forEach(ord => {
-          const isDelivered = ord.order_status === 'delivered';
+          // FIX: Normalize database keys and handle string casing variations securely
+          const rawStatus = ord.status || ord.order_status || 'pending';
+          const normalizedStatus = rawStatus.toLowerCase();
+          const isDelivered = normalizedStatus === 'delivered' || normalizedStatus === 'fulfilled';
+
           ordersLedger.innerHTML += `
             <div class="ledger-item">
               <div class="ledger-header">
@@ -657,7 +653,7 @@
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Size Matrix: ${ord.selected_size}</div>
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Location: ${ord.delivery_location}</div>
                 </div>
-                <span class="tag-status ${ord.order_status}">${ord.order_status}</span>
+                <span class="tag-status ${normalizedStatus}">${normalizedStatus.toUpperCase()}</span>
               </div>
               <div class="actions-group">
                 ${!isDelivered ? `<button class="btn-sm btn-deliver-action" onclick="markOrderDelivered(${ord.id})">Fulfill Order</button>` : ''}
@@ -667,12 +663,10 @@
           `;
         });
 
-        // FIX 4: Only show the dashboard to the browser layout block AFTER all records are authenticated and verified
         document.getElementById('dashboard-view').classList.remove('hidden');
 
       } catch (err) { 
         console.error("Interface compilation fault."); 
-        // Force back to lock view if request times out or breaks due to sleeping servers
         document.getElementById('lock-view').classList.remove('hidden');
       }
     }
